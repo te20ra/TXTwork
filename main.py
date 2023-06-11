@@ -16,6 +16,7 @@ TABLE = {"number": [],
          'GTD': [],
          'numberUPD': '',
          'dateUPD': ''}
+SELECTEDED =''
 def openfile(): # функция для открытия даиалогового окна выбора файла
     global FILENAME
     FILENAME = filedialog.askopenfilename()
@@ -23,7 +24,7 @@ def openfile(): # функция для открытия даиалоговог�
     label_filename = Label(window, text=f'Файл: {short_filename}') # создается текст, где прописан путь к
     # выбранному
     # файлу
-    label_filename.grid(column=1, row=0)#label_filename.grid(column=1, row=0, padx=(50,0),pady=(50,0))
+    label_filename.grid(column=1,columnspan=2, row=0)#label_filename.grid(column=1, row=0, padx=(50,0),pady=(50,0))
 
 
 def read_book():
@@ -90,10 +91,15 @@ def change_line(text_editor1,text_editor2):
 
 def start(text_editor1,text_editor2):
     global TABLE
-    label_progress = Label(window, text='Пошел процесс')
+    label_progress = Label(window, text='Пошел процессссссссс')
     label_progress.grid(column=1, row=1)#label_progress.grid(column=0, row=2, padx=(50, 0), pady=(50, 0))
     read_book()
     change_line(text_editor1, text_editor2)
+    label_progress.configure(text='Выполнено')
+
+def copy():
+    text_editor2.clipboard_clear()  # Очистить буфер обмена
+    text_editor2.clipboard_append(text_editor2.get(1.0, END))  # Скопировать текст в буфер обмена
 
 
 window = Tk() # создается окно интрефейса
@@ -101,20 +107,29 @@ window.title("Данные из екселя в текст")
 window.geometry("800x1300")
 
 for c in range(10): window.columnconfigure(index=c, weight=10)
-for r in range(10): window.rowconfigure(index=r, weight=10)
+for r in range(10): window.rowconfigure(index=r, weight=5)
 
 
-button_chose = Button(window,text='Выбрать файл', command=openfile) #создается кнопка с функциее откртия файла
+button_chose = Button(window,text='Выбрать файл', command=openfile) #кнопка с функцией откртия файла
 button_chose.grid(column=0, row=0)  #button_chose.grid(column=0, row=0, padx=(50,0), pady=(50,0))
-
-
-text_editor1 = Text(width=40, height=10, wrap=WORD)
-text_editor1.grid(column=0, row=3, columnspan=2)
-text_editor2 = Text(width=40, height=10, wrap=WORD)
-text_editor2.grid(column=0, row=4, columnspan=2)
-
 
 button_start = Button(window, text='Выполнить', command=lambda: start(text_editor1,text_editor2))
 button_start.grid(column=0, row=1)  #button_start.grid(column=0, row=1, padx=(10,0), pady=(50,0))
+
+label_xml1 = Label(window, text='В окно ниже вставить содержимое XML ')
+label_xml1.grid(column=0, row=2)
+
+text_editor1 = Text(width=40, height=10, wrap=WORD)
+text_editor1.grid(column=0, row=3, columnspan=2)
+
+label_xml2 = Label(window, text='В окне ниже результат')
+label_xml2.grid(column=0, row=4)
+
+text_editor2 = Text(width=40, height=10, wrap=WORD)
+text_editor2.grid(column=0, row=5, columnspan=2)
+
+button_copy = Button(window, text='Скопировать результат', command=copy)
+button_copy.grid(column=0, row=6)
+
 
 window.mainloop()
