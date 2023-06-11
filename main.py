@@ -13,7 +13,9 @@ TABLE = {"number": [],
          'price_without_nds': [],
          'price_with_nds': [],
          'nds': [],
-         'GTD': []}
+         'GTD': [],
+         'numberUPD': '',
+         'dateUPD': ''}
 def openfile(): # функция для открытия даиалогового окна выбора файла
     global FILENAME
     FILENAME = filedialog.askopenfilename()
@@ -31,8 +33,6 @@ def read_book():
     row_max = sheet_active.max_row
     column_max = sheet_active.max_column
     keys = list(TABLE.keys())  # вывод всех ключей в список
-    print(keys)
-    print(column_max, row_max)
     count = 0
     for col in [3, 4, 5, 6, 7, 8, 10, 11, 13]:
         key = keys[count]  # выбор ключа
@@ -43,8 +43,13 @@ def read_book():
             TABLE[key].append(val)  # добавили значение ячейки
         print(TABLE[key])
         count += 1
+    TABLE['numberUPD'] = str(sheet_active['A2'].internal_value)
+    s = str(sheet_active['B2'].internal_value)
+    TABLE['dateUPD'] = s[8:10] + '.' + s[5:7] + '.' + s[0:4]
 
-def stroka():
+
+
+def table_in_line():
     lengt = TABLE['number'][-1]
     line ='<ТаблСчФакт>'
     for i in range(lengt):
@@ -56,17 +61,39 @@ def stroka():
                 f'СтТовУчНал="{TABLE["price_with_nds"][i]}"><Акциз><БезАкциз>без ' \
                 f'акциза</БезАкциз></Акциз><СумНал><СумНал>{TABLE["nds"][i]}</СумНал></СумНал>' \
                 f'<СвТД КодПроисх="156" НомерТД="{TABLE["GTD"][i]}" />' \
-                f'<ДопСведТов ПрТовРаб="1" КодТов="{TABLE["code"][i]}" НаимЕдИзм="шт" КрНаимСтрПр="КИТАЙ" НадлОтп="0" /></СведТов> '
+                f'<ДопСведТов ПрТовРаб="1" КодТов="{TABLE["code"][i]}" НаимЕдИзм="шт" КрНаимСтрПр="КИТАЙ" НадлОтп="0" /></СведТов>'
     line += '</ТаблСчФакт>'
-    print(line)
     return line
+
+def change_line(text_editor1,text_editor2):
+    input_line = text_editor1.get(1.0, END)
+
+    num1_start = input_line.find('ВерсФорм')-6
+    num1_end = input_line.find('ВерсФорм')-2
+    num1 = str(int(input_line[num1_start:num1_end]) + 1)
+    output_line = input_line[:num1_start] + num1
+
+    upd1_start = input_line.find('НомерСчФ=')
+    codeOKV = input_line[input_line.find('КодОКВ') + 8:input_line.find(' ДатаСчФ') - 1]
+    output_line += input_line[num1_end:upd1_start] + 'НомерСчФ="' + TABLE['numberUPD'] + '" КодОКВ="' + codeOKV + \
+                   '" ДатаСчФ="' + TABLE['dateUPD'] + '">'
+
+    upd2_start = input_line.find('НомДокОтгр') + 12
+    output_line += input_line[input_line.find('<ИспрСчФ ДефНомИспрСчФ'):upd2_start] + TABLE['numberUPD'] + \
+        '" ДатаДокОтгр="' + TABLE['dateUPD'] + '" /><ИнфПолФХЖ1></ИнфПолФХЖ1></СвСчФакт>'
+    output_line += table_in_line()
+    #print(num1_start,num1_end,upd1_start,codeOKV,upd2_start,input_line.find('<ИспрСчФ ДефНомИспрСчФ'))
+    output_line += '<СвПродПер><СвПер СодОпер="Товары переданы"><ОснПер ДатаОсн="' + TABLE['dateUPD'] + \
+        '" НаимОсн="Уведомление о выкупе" НомОсн="' + TABLE['numberUPD'] + '" />'
+    output_line += input_line[input_line.find('<СвПерВещи'):]
+    text_editor2.insert(1.0, output_line)
+
 def start(text_editor1,text_editor2):
     global TABLE
     label_progress = Label(window, text='Пошел процесс')
     label_progress.grid(column=1, row=1)#label_progress.grid(column=0, row=2, padx=(50, 0), pady=(50, 0))
     read_book()
-    line = stroka()
-    text_editor2.insert(1.0, line)
+    change_line(text_editor1, text_editor2)
 
 
 window = Tk() # создается окно интрефейса
@@ -91,4 +118,3 @@ button_start = Button(window, text='Выполнить', command=lambda: start(t
 button_start.grid(column=0, row=1)  #button_start.grid(column=0, row=1, padx=(10,0), pady=(50,0))
 
 window.mainloop()
-path_to_file = 'Копия Модуль 4. Урок 17.xlsx'
