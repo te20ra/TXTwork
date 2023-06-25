@@ -4,7 +4,8 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 
-FILENAME = ''
+FILENAME_XLSX = ''
+FILENAME_XML = ''
 TABLE = {"number": [],
          "code": [],
          'name': [],
@@ -16,19 +17,32 @@ TABLE = {"number": [],
          'GTD': [],
          'numberUPD': '',
          'dateUPD': ''}
-SELECTEDED =''
-def openfile(): # функция для открытия даиалогового окна выбора файла
-    global FILENAME
-    FILENAME = filedialog.askopenfilename()
-    short_filename = FILENAME[FILENAME.rfind('/')+1:]
-    label_filename = Label(window, text=f'Файл: {short_filename}') # создается текст, где прописан путь к
-    # выбранному
-    # файлу
-    label_filename.grid(column=1,columnspan=2, row=0)#label_filename.grid(column=1, row=0, padx=(50,0),pady=(50,0))
 
+
+def shortcut_name(name):
+    shortname = name[name.rfind('/')+1:]
+    if len(shortname) < 30:
+        return shortname
+    else:
+        shortname = shortname[:13] + '...' + shortname[-13:]
+        return shortname
+def openfile_xlsx(): # функция для открытия даиалогового окна выбора файла
+    global FILENAME_XLSX
+    FILENAME_XLSX = filedialog.askopenfilename()
+    short_filename = shortcut_name(FILENAME_XLSX)
+    label_filename = Label(window, text=f'Файл Excel: {short_filename}')
+    label_filename.grid(column=1, row=0)
+
+
+def openfile_xml():
+    global FILENAME_XML
+    FILENAME_XML = filedialog.askopenfilename()
+    short_filename = shortcut_name(FILENAME_XML)
+    label_filename = Label(window, text=f'Файл XML: {short_filename}') # создается текст, где прописан путь к
+    label_filename.grid(column=1, row=1)#label_filename.grid(column=1, row=0, padx=(50,0),pady=(50,0))
 
 def read_book():
-    workbook = openpyxl.load_workbook(FILENAME, data_only=True)  # загрузили книгу
+    workbook = openpyxl.load_workbook(FILENAME_XLSX, data_only=True)  # загрузили книгу
     sheets_list = workbook.sheetnames  # выгрузили имена листов
     sheet_active = workbook[sheets_list[2]]  # выбрали 3 лист
     row_max = sheet_active.max_row
@@ -66,70 +80,61 @@ def table_in_line():
     line += f'<ВсегоОпл СтТовБезНДСВсего="{sum(TABLE["price_without_nds"])}" СтТовУчНалВсего="{sum(TABLE["price_with_nds"])}"><СумНалВсего><СумНал>{sum(TABLE["nds"])}</СумНал></СумНалВсего></ВсегоОпл></ТаблСчФакт>'
     return line
 
-def change_line(text_editor1,text_editor2):
-    input_line = text_editor1.get(1.0, END)
+def change_line():
+    FILENAME_NEW_XML = FILENAME_XML[:-8] + str(int(FILENAME_XML[-8:-4]) + 1) + '.xml'
 
-    num1_start = input_line.find('ВерсФорм')-6
-    num1_end = input_line.find('ВерсФорм')-2
-    num1 = str(int(input_line[num1_start:num1_end]) + 1)
-    output_line = input_line[:num1_start] + num1
+    with open(FILENAME_XML, 'r') as main_xml, open(FILENAME_NEW_XML, 'w') as new_xml:
+        input_line = main_xml.read()
 
-    upd1_start = input_line.find('НомерСчФ=')
-    codeOKV = input_line[input_line.find('КодОКВ') + 8:input_line.find(' ДатаСчФ') - 1]
-    output_line += input_line[num1_end:upd1_start] + 'НомерСчФ="' + TABLE['numberUPD'] + '" КодОКВ="' + codeOKV + \
-                   '" ДатаСчФ="' + TABLE['dateUPD'] + '">'
+        num1_start = input_line.find('ВерсФорм')-6
+        num1_end = input_line.find('ВерсФорм')-2
+        num1 = str(int(input_line[num1_start:num1_end]) + 1)
+        output_line = input_line[:num1_start] + num1
 
-    upd2_start = input_line.find('НомДокОтгр') + 12
-    output_line += input_line[input_line.find('<ИспрСчФ ДефНомИспрСчФ'):upd2_start] + TABLE['numberUPD'] + \
-        '" ДатаДокОтгр="' + TABLE['dateUPD'] + '" /><ИнфПолФХЖ1></ИнфПолФХЖ1></СвСчФакт>'
-    output_line += table_in_line()
-    #print(num1_start,num1_end,upd1_start,codeOKV,upd2_start,input_line.find('<ИспрСчФ ДефНомИспрСчФ'))
-    output_line += '<СвПродПер><СвПер СодОпер="Товары переданы"><ОснПер ДатаОсн="' + TABLE['dateUPD'] + \
-        '" НаимОсн="Уведомление о выкупе" НомОсн="' + TABLE['numberUPD'] + '" />'
-    output_line += input_line[input_line.find('<СвПерВещи'):]
-    text_editor2.insert(1.0, output_line)
+        upd1_start = input_line.find('НомерСчФ=')
+        codeOKV = input_line[input_line.find('КодОКВ') + 8:input_line.find(' ДатаСчФ') - 1]
+        output_line += input_line[num1_end:upd1_start] + 'НомерСчФ="' + TABLE['numberUPD'] + '" КодОКВ="' + codeOKV + \
+                       '" ДатаСчФ="' + TABLE['dateUPD'] + '">'
 
-def start(text_editor1,text_editor2):
+        upd2_start = input_line.find('НомДокОтгр') + 12
+        output_line += input_line[input_line.find('<ИспрСчФ ДефНомИспрСчФ'):upd2_start] + TABLE['numberUPD'] + \
+            '" ДатаДокОтгр="' + TABLE['dateUPD'] + '" /><ИнфПолФХЖ1></ИнфПолФХЖ1></СвСчФакт>'
+        output_line += table_in_line()
+
+
+        output_line += '<СвПродПер><СвПер СодОпер="Товары переданы"><ОснПер ДатаОсн="' + TABLE['dateUPD'] + \
+            '" НаимОсн="Уведомление о выкупе" НомОсн="' + TABLE['numberUPD'] + '" />'
+        output_line += input_line[input_line.find('<СвПерВещи'):]
+
+        new_xml.write(output_line)
+
+def start():
     global TABLE
-    label_progress = Label(window, text='Пошел процессссссссс')
-    label_progress.grid(column=1, row=1)#label_progress.grid(column=0, row=2, padx=(50, 0), pady=(50, 0))
     read_book()
-    change_line(text_editor1, text_editor2)
-    label_progress.configure(text='Выполнено')
+    change_line()
 
-def copy():
-    text_editor2.clipboard_clear()  # Очистить буфер обмена
-    text_editor2.clipboard_append(text_editor2.get(1.0, END))  # Скопировать текст в буфер обмена
 
 
 window = Tk() # создается окно интрефейса
 window.title("Данные из екселя в текст")
-window.geometry("1000x2000")
+window.geometry("1000x400")
 
 for c in range(10): window.columnconfigure(index=c, weight=10)
 for r in range(10): window.rowconfigure(index=r, weight=5)
 
 
-button_chose = Button(window,text='Выбрать файл', command=openfile) #кнопка с функцией откртия файла
-button_chose.grid(column=0, row=0)  #button_chose.grid(column=0, row=0, padx=(50,0), pady=(50,0))
+button_chose_xlsx = Button(window, text='Выбрать ексель файл', command=openfile_xlsx) #кнопка с функцией откртия файла
+button_chose_xlsx.grid(column=0, row=0)  #button_chose.grid(column=0, row=0, padx=(50,0), pady=(50,0))
 
-button_start = Button(window, text='Выполнить', command=lambda: start(text_editor1,text_editor2))
-button_start.grid(column=0, row=1)  #button_start.grid(column=0, row=1, padx=(10,0), pady=(50,0))
+button_chose_xml = Button(window, text='Выбрать xml файл', command=openfile_xml) #кнопка с функцией откртия файла
+button_chose_xml.grid(column=0, row=1)  #button_chose.grid(column=0, row=0, padx=(50,0), pady=(50,0))
 
-label_xml1 = Label(window, text='В окно ниже вставить содержимое XML ')
-label_xml1.grid(column=0, row=2)
+button_start = Button(window, text='Выполнить', command=start)
+button_start.grid(column=0, row=2)  #button_start.grid(column=0, row=1, padx=(10,0), pady=(50,0))
 
-text_editor1 = Text(width=40, height=10, wrap=WORD)
-text_editor1.grid(column=0, row=3, columnspan=2)
 
-label_xml2 = Label(window, text='В окне ниже результат')
-label_xml2.grid(column=0, row=4)
-
-text_editor2 = Text(width=40, height=10, wrap=WORD)
-text_editor2.grid(column=0, row=5, columnspan=2)
-
-button_copy = Button(window, text='Скопировать результат', command=copy)
-button_copy.grid(column=0, row=6)
 
 
 window.mainloop()
+
+#its reary on 25.06.2023 18:25
