@@ -112,12 +112,14 @@ def start():
     global TABLE
     read_book()
     change_line()
+    label_end = Label(window, text=f'Выполнено')
+    label_end.grid(column=0, row=3)
 
 
 
 window = Tk() # создается окно интрефейса
-window.title("Данные из екселя в текст")
-window.geometry("1000x400")
+window.title("Excel to XML")
+window.geometry("400x300")
 
 for c in range(10): window.columnconfigure(index=c, weight=10)
 for r in range(10): window.rowconfigure(index=r, weight=5)
@@ -137,4 +139,4 @@ button_start.grid(column=0, row=2)  #button_start.grid(column=0, row=1, padx=(10
 
 window.mainloop()
 
-#its reary on 25.06.2023 18:25
+#its reary on 25.06.2023 18:45
