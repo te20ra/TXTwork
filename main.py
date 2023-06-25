@@ -36,7 +36,6 @@ def read_book():
     count = 0
     for col in [3, 4, 5, 6, 11, 10, 7, 9, 15]:
         key = keys[count]  # выбор ключа
-        print(key)
         for row in range(2, row_max + 1):
             cell_letter = str(get_column_letter(col)) + str(row)  # ячейка
             val = sheet_active[cell_letter].internal_value  # значение ячейки
@@ -44,7 +43,6 @@ def read_book():
                 pass
             else:
                 TABLE[key].append(val)  # добавили значение ячейки
-        print(TABLE[key])
         count += 1
     TABLE['numberUPD'] = str(sheet_active['A2'].internal_value)
     s = str(sheet_active['B2'].internal_value)
@@ -65,7 +63,7 @@ def table_in_line():
                 f'акциза</БезАкциз></Акциз><СумНал><СумНал>{TABLE["nds"][i]}</СумНал></СумНал>' \
                 f'<СвТД КодПроисх="156" НомерТД="{TABLE["GTD"][i]}" />' \
                 f'<ДопСведТов ПрТовРаб="1" КодТов="{TABLE["code"][i]}" НаимЕдИзм="шт" КрНаимСтрПр="КИТАЙ" НадлОтп="0" /></СведТов>'
-    line += '</ТаблСчФакт>'
+    line += f'<ВсегоОпл СтТовБезНДСВсего="{sum(TABLE["price_without_nds"])}" СтТовУчНалВсего="{sum(TABLE["price_with_nds"])}"><СумНалВсего><СумНал>{sum(TABLE["nds"])}</СумНал></СумНалВсего></ВсегоОпл></ТаблСчФакт>'
     return line
 
 def change_line(text_editor1,text_editor2):
@@ -106,7 +104,7 @@ def copy():
 
 window = Tk() # создается окно интрефейса
 window.title("Данные из екселя в текст")
-window.geometry("500x800")
+window.geometry("1000x2000")
 
 for c in range(10): window.columnconfigure(index=c, weight=10)
 for r in range(10): window.rowconfigure(index=r, weight=5)
