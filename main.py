@@ -1,7 +1,6 @@
 import openpyxl
 from openpyxl.utils import get_column_letter
 from tkinter import *
-from tkinter import ttk
 from tkinter import filedialog
 
 FILENAME_XLSX = ''
@@ -50,13 +49,29 @@ def read_book():
     count = 0
     for col in [3, 4, 5, 6, 11, 10, 7, 9, 15]:
         key = keys[count]  # выбор ключа
-        for row in range(2, row_max + 1):
+        for row in range(2, row_max):
             cell_letter = str(get_column_letter(col)) + str(row)  # ячейка
             val = sheet_active[cell_letter].internal_value  # значение ячейки
             if val is None:
                 pass
             else:
-                TABLE[key].append(val)  # добавили значение ячейки
+                if col in [4,5]: #str
+                    val = str(val)
+                    TABLE[key].append(val)  # добавили значение ячейки
+                elif col in [7,9,10,11]: #int
+                    val = str(val)
+                    if ',' in val:
+                        val = val.replace(',','.')
+                    val = float(val)
+                    val = round(val,2)
+                    TABLE[key].append(val)
+                elif col in [3, 6]:  #count
+                    val = int(val)
+                    TABLE[key].append(val)
+                elif col == 15: #gtd
+                    val = str(val)
+                    val = val.strip()
+                    TABLE[key].append(val)
         count += 1
     TABLE['numberUPD'] = str(sheet_active['A2'].internal_value)
     s = str(sheet_active['B2'].internal_value)
@@ -68,16 +83,28 @@ def table_in_line():
     lengt = int(TABLE['number'][-1])
     line ='<ТаблСчФакт>'
     for i in range(lengt):
-        line += f'<СведТов НомСтр="{TABLE["number"][i]}" ' \
-                f'НаимТов="{TABLE["name"][i]}"' \
-                f' ОКЕИ_Тов="796" КолТов="{TABLE["count"][i]}" ЦенаТов="{TABLE["price"][i]}" СтТовБезНДС="' \
-                f'{TABLE["price_without_nds"][i]}" ' \
-                f'НалСт="20%" ' \
-                f'СтТовУчНал="{TABLE["price_with_nds"][i]}"><Акциз><БезАкциз>без ' \
-                f'акциза</БезАкциз></Акциз><СумНал><СумНал>{TABLE["nds"][i]}</СумНал></СумНал>' \
-                f'<СвТД КодПроисх="156" НомерТД="{TABLE["GTD"][i]}" />' \
-                f'<ДопСведТов ПрТовРаб="1" КодТов="{TABLE["code"][i]}" НаимЕдИзм="шт" КрНаимСтрПр="КИТАЙ" НадлОтп="0" /></СведТов>'
-    line += f'<ВсегоОпл СтТовБезНДСВсего="{sum(TABLE["price_without_nds"])}" СтТовУчНалВсего="{sum(TABLE["price_with_nds"])}"><СумНалВсего><СумНал>{sum(TABLE["nds"])}</СумНал></СумНалВсего></ВсегоОпл></ТаблСчФакт>'
+        if TABLE["GTD"][i] != '0':
+            line += f'<СведТов НомСтр="{TABLE["number"][i]}" ' \
+                    f'НаимТов="{TABLE["name"][i]}"' \
+                    f' ОКЕИ_Тов="796" КолТов="{TABLE["count"][i]}" ЦенаТов="{TABLE["price"][i]}" СтТовБезНДС="' \
+                    f'{TABLE["price_without_nds"][i]}" ' \
+                    f'НалСт="20%" ' \
+                    f'СтТовУчНал="{TABLE["price_with_nds"][i]}"><Акциз><БезАкциз>без ' \
+                    f'акциза</БезАкциз></Акциз><СумНал><СумНал>{TABLE["nds"][i]}</СумНал></СумНал>' \
+                    f'<СвТД КодПроисх="156" НомерТД="{TABLE["GTD"][i]}" />' \
+                    f'<ДопСведТов ПрТовРаб="1" КодТов="{TABLE["code"][i]}" НаимЕдИзм="шт" КрНаимСтрПр="КИТАЙ" НадлОтп="0" /></СведТов>'
+        else:
+            line += f'<СведТов НомСтр="{TABLE["number"][i]}" ' \
+                    f'НаимТов="{TABLE["name"][i]}"' \
+                    f' ОКЕИ_Тов="796" КолТов="{TABLE["count"][i]}" ЦенаТов="{TABLE["price"][i]}" СтТовБезНДС="' \
+                    f'{TABLE["price_without_nds"][i]}" ' \
+                    f'НалСт="20%" ' \
+                    f'СтТовУчНал="{TABLE["price_with_nds"][i]}"><Акциз><БезАкциз>без ' \
+                    f'акциза</БезАкциз></Акциз><СумНал><СумНал>{TABLE["nds"][i]}</СумНал></СумНал>' \
+                    f'<СвТД КодПроисх="643" НомерТД="—" />' \
+                    f'<ДопСведТов ПрТовРаб="1" КодТов="{TABLE["code"][i]}" НаимЕдИзм="шт" КрНаимСтрПр="—" НадлОтп="0" /></СведТов>'
+    sum1, sum2, sum3 = round(sum(TABLE["price_without_nds"]),2), round(sum(TABLE["price_with_nds"]),2), round(sum(TABLE["nds"]),2)
+    line += f'<ВсегоОпл СтТовБезНДСВсего="{sum1}" СтТовУчНалВсего="{sum2}"><СумНалВсего><СумНал>{sum3}</СумНал></СумНалВсего></ВсегоОпл></ТаблСчФакт>'
     return line
 
 def change_line():
@@ -139,4 +166,4 @@ button_start.grid(column=0, row=2)  #button_start.grid(column=0, row=1, padx=(10
 
 window.mainloop()
 
-#its reary on 25.06.2023 18:45
+#its reary on 02.07.2023 18:45
