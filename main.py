@@ -74,8 +74,9 @@ def read_book():
                     TABLE[key].append(val)
         count += 1
     TABLE['numberUPD'] = str(sheet_active['A2'].internal_value)
-    s = str(sheet_active['B2'].internal_value)
-    TABLE['dateUPD'] = s[8:10] + '.' + s[5:7] + '.' + s[0:4]
+    #s = str(sheet_active['B2'].internal_value)
+    #TABLE['dateUPD'] = s[8:10] + '.' + s[5:7] + '.' + s[0:4]
+    TABLE['dateUPD'] = str(sheet_active['B2'].internal_value)
 
 
 
@@ -145,7 +146,7 @@ def start():
 
 
 window = Tk() # создается окно интрефейса
-window.title("Excel to XML")
+window.title("Excel to XML (08.01.2024)")
 window.geometry("400x300")
 
 for c in range(10): window.columnconfigure(index=c, weight=10)
@@ -166,4 +167,4 @@ button_start.grid(column=0, row=2)  #button_start.grid(column=0, row=1, padx=(10
 
 window.mainloop()
 
-#its reary on 02.07.2023 18:45
+#its ready on 08.01.2024 13:39
